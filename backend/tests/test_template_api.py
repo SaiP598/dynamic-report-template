@@ -125,7 +125,7 @@ def test_saved_configuration_survives_new_app_and_restore():
         pdf = second.post("/api/reports")
         pdf_text = "\n".join(page.extract_text() for page in PdfReader(BytesIO(pdf.data)).pages)
         assert "Custom heading" not in pdf_text
-        assert "1. Current Patient Medications" in pdf_text
+        assert "Current Patient Medications" in pdf_text
         assert create_app(settings).test_client().get("/api/templates/current").json == restored.json
         assert client.get("/api/templates/default").json == baseline
     finally:

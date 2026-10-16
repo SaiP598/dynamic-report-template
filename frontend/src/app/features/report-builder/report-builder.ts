@@ -167,16 +167,9 @@ export class ReportBuilder {
         setTimeout(() => URL.revokeObjectURL(url), 1000);
         this.downloadStatus.set('Report downloaded from saved revision ' + (response.headers.get('X-Template-Revision') ?? this.revision()) + '.');
       },
-      error: async error => {
-        let message = 'Could not generate the report. Your edits are unchanged. Please try again.';
-        if (error.error instanceof Blob) {
-          try {
-            const detail = JSON.parse(await error.error.text());
-            if (detail.error?.code === 'reference_unavailable') message = detail.error.message;
-          } catch { /* Keep the general error for non-JSON responses. */ }
-        }
+      error: () => {
         this.generating.set(false);
-        this.downloadError.set(message);
+        this.downloadError.set('Could not generate the report. Your edits are unchanged. Please try again.');
       },
     });
   }

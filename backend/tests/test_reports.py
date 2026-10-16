@@ -24,12 +24,12 @@ def test_order_headings_and_escaped_text():
     output = texts(render_report(config))
     combined = "\n".join(output)
     assert "Card <b>literal</b> & summary" in combined
-    assert combined.index("1. Card") < combined.index("7. Current Patient Medications")
+    assert combined.index("Card <b>literal</b>") < combined.index("Current Patient Medications")
     assert "DEMO-GENE" in combined
     for page in output:
         assert "Header <b>plain</b>" in page
         assert "My footer" in page
-        assert "Patient: Demo Patient" in page
+        assert "Demo Patient" in page
         assert "Page " in page
 
 
@@ -77,3 +77,16 @@ def test_blank_and_newline_heavy_decorations_fit():
     config["header"]["text"] = "\n" * 999
     config["footer"]["text"] = ""
     assert "Current Patient Medications" in "\n".join(texts(render_report(config)))
+
+
+def test_format_only_layout_uses_placeholders_without_reference_reads():
+    with patch("pathlib.Path.read_bytes", side_effect=AssertionError("Reference reads are forbidden")):
+        pdf = render_report(get_default_configuration())
+    reader = PdfReader(BytesIO(pdf))
+    assert float(reader.pages[0].mediabox.width) == 612
+    assert float(reader.pages[0].mediabox.height) == 792
+    output = "\n".join(page.extract_text() for page in reader.pages)
+    assert "<br/>" not in output
+    for label in ("PATIENT INFORMATION", "SPECIMEN DETAILS", "PROVIDER INFORMATION",
+                  "Demo Patient", "Demo Laboratory", "SYNTHETIC DEMONSTRATION"):
+        assert label in output

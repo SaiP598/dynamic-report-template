@@ -18,7 +18,7 @@
         <button type="button" class="primary" [disabled]="busy() || !valid() || !edited()" (click)="save()">{{ busy() ? 'Working...' : 'Save template' }}</button>
         <button type="button" [disabled]="busy() || generating()" (click)="downloadReport()">{{ generating() ? 'Generating PDF...' : 'Download PDF' }}</button>
       </div>
-      <p class="download-note">PDF reports use your last saved template. Unsaved edits are not included. The default PDF preserves the supplied reference format.</p>
+      <p class="download-note">PDF reports use your last saved template. Unsaved edits are not included. Reports use synthetic placeholders in the reference-inspired layout.</p>
       @if (downloadStatus()) { <p class="feedback" role="status">{{ downloadStatus() }}</p> }
       @if (downloadError()) { <p class="field-error" role="alert">{{ downloadError() }}</p> }
       @if (feedback()) { <p class="feedback" role="status">{{ feedback() }}</p> }
@@ -61,7 +61,7 @@
         </div>
         <div class="formatting-panel">
           <h2>Header and footer</h2>
-          <p class="hint">The default preserves the reference branding. Editing a header or footer replaces that region with your formatted text. Empty text hides that block.</p>
+          <p class="hint">Customize the report title and footer text. The layout follows the reference format using demonstration labels. Empty text hides that text block.</p>
           @for (target of formattingTargets; track target) {
             <fieldset [disabled]="busy()" class="formatting-group">
               <legend>{{ target === 'header' ? 'Header' : 'Footer' }}</legend>
@@ -84,7 +84,7 @@
                 <label><input type="checkbox" [ngModel]="template[target].italic" (ngModelChange)="updateFormatting(target, { italic: $event })" /> Italic</label>
               </div>
               <p class="hint">Text preview</p>
-              <div class="text-preview" [style.text-align]="template[target].alignment" [style.color]="template[target].color"
+              <div class="text-preview" [style.background-color]="target === 'header' ? '#009688' : '#ffffff'" [style.text-align]="template[target].alignment" [style.color]="template[target].color"
                 [style.font-size.pt]="template[target].fontSize >= 6 && template[target].fontSize <= 36 ? template[target].fontSize : 14"
                 [style.font-weight]="template[target].bold ? '700' : '400'" [style.font-style]="template[target].italic ? 'italic' : 'normal'">{{ template[target].text || '(No text)' }}</div>
             </fieldset>

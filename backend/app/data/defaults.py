@@ -15,17 +15,11 @@ _DEFAULT_JSON = json.dumps({
     "schemaVersion": 1,
     "sections": [dict(id=id_, heading=heading)
                  for id_, heading in zip(SECTION_IDS, DEFAULT_HEADINGS)],
-    "header": {"text": "Proove Drug Metabolism (Reprocessing)",
+    "header": {"text": "Drug Metabolism Report",
                "alignment": "center", "fontSize": 14, "bold": True,
-               "italic": False, "color": "#009688"},
-    "footer": {"text": "Labarium Diagnostic Systems, Inc.\n"
-                       "InfinitiLabs, Inc.(\"InfinitiLabs\") is an agent of Labarium Diagnostic Systems, Inc.\n"
-                       "425 Grand Boulevard, Suite 206, Miramar Beach, Florida, USA 32550\n"
-                       "www.Labarium.com\n"
-                       "Laboratory Performing Test: InfinitiLabs, Inc\n"
-                       "Laboratory Director: Dr. Barroso-Vicens, MD\n"
-                       "6015 Benjamin Road, Suite 315, Tampa, FL 33634\n"
-                       "Phone: 813-886-2616, Fax: 813-886-2735 | CLIA:10D2020310",
+               "italic": False, "color": "#ffffff"},
+    "footer": {"text": "Demo Laboratory\nExample laboratory information\n"
+                       "Synthetic report - not for clinical use\nExample address | example.invalid",
                "alignment": "left", "fontSize": 6, "bold": False,
                "italic": False, "color": "#555555"},
 })

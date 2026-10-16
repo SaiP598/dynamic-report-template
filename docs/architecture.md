@@ -39,29 +39,20 @@ Writes are last-write-wins; optimistic concurrency and authentication are outsid
 this demo's scope. Failed database operations roll back and return sanitized 503
 errors. The baseline endpoint is independent of database availability.
 
-ReportLab renders A4 reports using escaped Paragraphs, splittable LongTables, embedded
+ReportLab renders US Letter reports using escaped Paragraphs, splittable LongTables, embedded
 Vera fonts, and dynamic header/footer margins. Each page repeats metadata and page
 numbering. Long decoration text shrinks to fit reserved regions. The report endpoint
 accepts no body and reads the last saved server configuration. It returns a PDF
 attachment with the revision header and no-store caching. Report content remains
 synthetic and separate from preferences; fidelity limits are documented in README.
 
-## Exact reference rendering update
+## Format-only rendering
 
-Normal report downloads now use `REPORT_REFERENCE_PATH`, defaulting to the ignored
-assessment attachment under `references/private`. PyMuPDF preserves original vector
-content. Exact baseline configuration returns the original bytes; heading edits use
-source geometry/fonts; reordering composes complete section page fragments and
-renumbers pages. Two sections sharing source page one may become separate pages.
-Header/footer changes are applied before composition to avoid removing unrelated
-artwork in shared PDF paths. Default branded regions remain untouched. Missing or
-incompatible references return a sanitized 503. A ReportLab overlay handles custom
-plain-text decorations. The older synthetic renderer is used only when the app is
-explicitly configured with `REPORT_REFERENCE_PATH=None`, notably in portable tests.
-
-Reference fidelity verification uses generated nonclinical fixture PDFs: baseline
-byte equality, unchanged-page/body/header/footer pixel equality, complete section
-reorder, numbering, custom and empty decorations, missing-source API errors, and
-invalid-source rejection. Seven new tests bring the backend suite to 32. The actual
-attachment was also checked byte-for-byte and customized pages visually inspected.
-The private PDF and derived clinical images remain ignored rather than committed.
+The supplied PDF is a visual reference only. ReportLab builds a new document from
+synthetic fixtures: metadata columns, teal title strips, numbered section circles,
+colored medication columns, and a two-column footer. The runtime does not read or
+embed any source PDF, patient data, clinical results, or original contact details.
+The source-backed renderer and its reference-path configuration were removed.
+Pagination follows placeholder content and saved preferences; no raw source pages
+are copied. Header/footer settings and complete section reorder remain supported.
+A regression test verifies the renderer works with reference-file reads prohibited.

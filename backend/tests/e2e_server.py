@@ -13,7 +13,6 @@ if not re.fullmatch(r"e2e_[0-9a-f]{32}", schema):
     raise SystemExit("Launch browser checks through scripts/verify.py.")
 app = create_app({
     "DATABASE_URL": os.environ["TEST_DATABASE_URL"],
-    "REPORT_REFERENCE_PATH": None,
     "SQLALCHEMY_ENGINE_OPTIONS": {"connect_args": {"options": f"-csearch_path={schema}"}},
 })
 with app.app_context():
