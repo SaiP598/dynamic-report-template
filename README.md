@@ -3,9 +3,9 @@
 Assessment implementation using Angular/TypeScript, Python Flask, and PostgreSQL.
 
 ## Current status
-Modules 1-2 complete: application scaffold, immutable default layout, seven synthetic
-report content blocks, PostgreSQL JSONB model, and executable Alembic migration.
-The editor, save/load APIs, and PDF generation follow in modules 3-6.
+Modules 1-3 complete: application scaffold, immutable default layout, seven synthetic
+report content blocks, PostgreSQL JSONB model, executable Alembic migration, and
+validated save/load/restore APIs. The editor and PDF generation follow in modules 4-6.
 
 ## Prerequisites
 Node.js 24, npm, Python 3.12+, Docker with Compose (or local PostgreSQL 17).
@@ -101,3 +101,33 @@ SQLAlchemy does not track nested in-place edits automatically.
 
 For PostgreSQL tests, set `TEST_DATABASE_URL` to a dedicated migrated test database
 before running pytest. Without it, database tests are explicitly skipped.
+
+## Template API (Module 3)
+
+All successful template responses have `configuration`, `revision`, `updatedAt`, and
+`isDefault`. `revision: 0` and `updatedAt: null` mean the baseline has not yet been
+saved; `isDefault` means the layout equals the baseline, even after a restore.
+
+| Method | Route | Behavior |
+| --- | --- | --- |
+| GET | `/api/templates/default` | Immutable baseline, no database access |
+| GET | `/api/templates/current` | Saved configuration, or baseline before first save |
+| PUT | `/api/templates/current` | Validate and persist a complete configuration |
+| POST | `/api/templates/current/restore` | Persist a fresh baseline; send no request body |
+
+PUT accepts the `configuration` object directly, not the response envelope.
+Fetch either GET endpoint and use its configuration as the starting payload.
+See `frontend/src/app/core/models/template.ts` for the version-one shape.
+
+Validation requires exactly seven unique known section IDs, schema version 1,
+nonblank headings up to 120 characters, header/footer text up to 1000 characters,
+integer font sizes 6-36, boolean bold/italic, left/center/right alignment, and
+`#RRGGBB` colors. Empty header/footer text is allowed. Unknown fields are rejected.
+Text is plain text, never executable HTML; rendering must escape it in module 6.
+
+Invalid configurations/malformed JSON return 400; unsupported content types return
+415; oversized bodies return 413. Database failures roll back and return a sanitized
+503 response. Errors use `{"error":{"code":"...","message":"..."}}`.
+Writes use an atomic PostgreSQL upsert and increment revisions, including restores.
+Concurrent saves use last-write-wins; revision is metadata, not an optimistic lock.
+No authentication or per-user templates are implemented in this assessment demo.

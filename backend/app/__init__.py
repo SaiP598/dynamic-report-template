@@ -30,6 +30,9 @@ def create_app(test_config=None):
     from .api.health import health_bp
     app.register_blueprint(health_bp, url_prefix="/api")
 
+    from .api.templates import templates_bp
+    app.register_blueprint(templates_bp, url_prefix="/api")
+
     @app.errorhandler(HTTPException)
     def handle_http_error(error):
         return jsonify(error={"code": error.name, "message": error.description}), error.code

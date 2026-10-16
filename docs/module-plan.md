@@ -109,3 +109,14 @@ ORM session, database constraints, timezone timestamps, and default isolation.
 The local project database is provisioned separately on port 55433. API routes and
 payload validation remain module 3 work. Synthetic fixtures represent structure,
 not the full 45-page source report or clinical recommendations.
+
+## Module 3 verification
+
+Implemented default/current GET, current PUT, and restore POST routes, strict
+version-one validation, metadata responses, atomic upserts with revisions, and
+sanitized storage errors with rollback. PostgreSQL integration checks use an isolated
+schema, run the real migration, and commit saves before loading through a new Flask
+application. Verified defaults before first save, order/headings/formatting round
+trip, rejected saves preserving stored data, repeated saves, persisted restore, and
+unchanged baseline. All 21 backend tests pass with PostgreSQL enabled. UI and PDF
+work remain in modules 4-6.

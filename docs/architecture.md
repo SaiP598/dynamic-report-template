@@ -18,7 +18,7 @@ section structure, tables, repeated headers/footers and dynamic pagination. Basi
 header/footer formatting: size, color, alignment, bold, italic. Arbitrary HTML is not
 accepted. The exact visual fidelity and data coverage will be documented after module 6.
 
-Proposed routes (only health is currently implemented):
+Routes (health and template routes implemented; reports arrive in module 6):
 - GET /api/health: liveness, not database readiness.
 - GET /api/templates/default: immutable baseline.
 - GET /api/templates/current: last saved configuration, or baseline before first save.
@@ -31,3 +31,10 @@ bounded text and font size, enumerated alignment, hex colors, reject unknown fie
 Errors return a consistent JSON envelope; do not expose internal stack traces.
 
 Framework compatibility: https://angular.dev/reference/versions
+
+Template GET/PUT/restore responses wrap the layout as `configuration`, with revision,
+updatedAt, and isDefault metadata. PUT accepts the bare configuration. An atomic
+PostgreSQL upsert prevents first-save races and increments revision on every write.
+Writes are last-write-wins; optimistic concurrency and authentication are outside
+this demo's scope. Failed database operations roll back and return sanitized 503
+errors. The baseline endpoint is independent of database availability.
