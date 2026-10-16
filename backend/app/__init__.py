@@ -20,7 +20,7 @@ def create_app(test_config=None):
         app.config.update(test_config)
 
     app.config["SQLALCHEMY_DATABASE_URI"] = app.config["DATABASE_URL"] or (
-        "postgresql+psycopg://report_builder:local_dev_only@localhost:5432/report_builder"
+        "postgresql+psycopg://report_builder:1234@localhost:5432/report_builder"
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     engine_options = app.config.setdefault("SQLALCHEMY_ENGINE_OPTIONS", {})

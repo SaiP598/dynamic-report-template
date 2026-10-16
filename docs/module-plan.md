@@ -106,7 +106,7 @@ Implemented: seven stable default sections, independent baseline/content copies,
 synthetic fixtures, SQLAlchemy JSONB singleton model, and Alembic migration.
 Verified PostgreSQL 18 migration upgrade, configuration round trip through a fresh
 ORM session, database constraints, timezone timestamps, and default isolation.
-The local project database is provisioned separately on port 55433. API routes and
+The local project database is provisioned on desktop PostgreSQL port 5432. API routes and
 payload validation remain module 3 work. Synthetic fixtures represent structure,
 not the full 45-page source report or clinical recommendations.
 

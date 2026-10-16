@@ -208,16 +208,17 @@ as `dynamic-report.pdf`. Generation rejects client layouts; save before generati
 
 ## Existing Windows workspace database
 
-This author's workspace uses an ignored `.local/postgres` PostgreSQL 18 cluster on
-127.0.0.1:55433, with `.env` already configured. It is independent of the existing
-system service on port 5432. Start/stop it from the project root when needed:
+This author's workspace uses the PostgreSQL 18 desktop service on
+127.0.0.1:5432, with `.env` already configured (`report_builder` / `1234`,
+database `report_builder`). Saved template tables were migrated here from the
+older ignored `.local/postgres` cluster.
+
+Connect with:
 
 ```powershell
-& 'C:\Program Files\PostgreSQL\18\bin\pg_ctl.exe' -D .local/postgres -l .local/postgres.log -o '-p 55433 -h 127.0.0.1' -w start
-& 'C:\Program Files\PostgreSQL\18\bin\pg_ctl.exe' -D .local/postgres -m fast -w stop
+& 'C:\Program Files\PostgreSQL\18\bin\psql.exe' -h 127.0.0.1 -p 5432 -U report_builder -d report_builder
 ```
 
-This local cluster and its administrator password file are not shipped in Git.
 Fresh checkouts should follow the general setup above. `.env`, `.local`, virtual
 environments, dependency folders, browser artifacts, and the clinical reference
 PDF remain ignored.
