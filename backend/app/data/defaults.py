@@ -18,8 +18,15 @@ _DEFAULT_JSON = json.dumps({
     "header": {"text": "Proove Drug Metabolism (Reprocessing)",
                "alignment": "center", "fontSize": 14, "bold": True,
                "italic": False, "color": "#009688"},
-    "footer": {"text": "Demonstration report | Synthetic data | Not for clinical use",
-               "alignment": "left", "fontSize": 9, "bold": False,
+    "footer": {"text": "Labarium Diagnostic Systems, Inc.\n"
+                       "InfinitiLabs, Inc.(\"InfinitiLabs\") is an agent of Labarium Diagnostic Systems, Inc.\n"
+                       "425 Grand Boulevard, Suite 206, Miramar Beach, Florida, USA 32550\n"
+                       "www.Labarium.com\n"
+                       "Laboratory Performing Test: InfinitiLabs, Inc\n"
+                       "Laboratory Director: Dr. Barroso-Vicens, MD\n"
+                       "6015 Benjamin Road, Suite 315, Tampa, FL 33634\n"
+                       "Phone: 813-886-2616, Fax: 813-886-2735 | CLIA:10D2020310",
+               "alignment": "left", "fontSize": 6, "bold": False,
                "italic": False, "color": "#555555"},
 })
 

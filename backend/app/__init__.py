@@ -15,9 +15,15 @@ def create_app(test_config=None):
     app.config.from_mapping(
         MAX_CONTENT_LENGTH=256 * 1024,
         DATABASE_URL=os.getenv("DATABASE_URL"),
+        REPORT_REFERENCE_PATH=os.getenv("REPORT_REFERENCE_PATH") or str(
+            Path(__file__).resolve().parents[2] / "references/private/Default_report_format.pdf"
+        ),
     )
     if test_config:
         app.config.update(test_config)
+
+    if app.testing and (not test_config or "REPORT_REFERENCE_PATH" not in test_config):
+        app.config["REPORT_REFERENCE_PATH"] = None
 
     app.config["SQLALCHEMY_DATABASE_URI"] = app.config["DATABASE_URL"] or (
         "postgresql+psycopg://report_builder:1234@localhost:5432/report_builder"

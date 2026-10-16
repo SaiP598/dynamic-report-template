@@ -1,5 +1,10 @@
 # Assessment reference
-Reviewed source: Default_report_format.pdf, attached to the assessment email.
-45 pages; five numbered sections plus a legend and patient information card.
-Place the original locally in private/ for implementation reference. It is ignored by Git.
-Do not publish identifiable clinical sample data in the repository. Use synthetic fixtures.
+
+Save the original email attachment as `private/Default_report_format.pdf`, or set
+`REPORT_REFERENCE_PATH` to its absolute path. The PDF is intentionally ignored by
+Git because it contains the supplied report's patient details. It is the runtime
+source for normal reference-format downloads. The exact default is returned
+byte-for-byte. Reviewers must install their own authorized copy separately.
+
+Do not commit the original PDF or derived clinical page images. Automated tests use
+a generated nonclinical reference fixture and the portable synthetic renderer.

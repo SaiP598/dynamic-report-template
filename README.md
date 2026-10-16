@@ -4,9 +4,11 @@ Angular/TypeScript + Flask + PostgreSQL assessment application. Arrange seven re
 sections, rename headings, format headers/footers, save preferences, restore the
 default, and download a PDF generated from the last saved configuration.
 
-All seven implementation modules are complete. The sample's **structure** is
-represented with synthetic content; this demo does not reproduce the full 45-page
-clinical report or its original patient data and logos.
+All seven implementation modules are complete. Normal PDF downloads use the private
+assessment attachment as the reference. Restoring the default produces the original
+45-page PDF byte-for-byte, including its fonts, logos, content, colors, tables,
+metadata, and two-column laboratory footer. The attachment must be installed locally;
+it is not published in this repository.
 
 ## Prerequisites
 
@@ -26,6 +28,17 @@ cp .env.example .env
 On PowerShell use `Copy-Item .env.example .env` instead of `cp`. For an existing
 checkout, preserve your working `.env`. Set development credentials and ensure
 `DATABASE_URL` matches the database, port, username, and password.
+
+Install the original email attachment as:
+
+```text
+references/private/Default_report_format.pdf
+```
+
+That directory is ignored by Git. Alternatively set `REPORT_REFERENCE_PATH` in
+`.env` to its absolute path (forward slashes also work on Windows). Use the original
+45-page US Letter PDF. Missing or incompatible references produce a clear generation
+error; normal downloads do not silently fall back to synthetic content.
 
 Start PostgreSQL with Compose:
 
@@ -122,7 +135,7 @@ python scripts/verify.py --test-database report_builder_test
 ```
 
 The command derives the test connection from `.env`, applies migrations, runs all
-25 backend tests, builds Angular, and runs two browser workflow tests. It uses
+32 backend tests, builds Angular, and runs two browser workflow tests. It uses
 ports **5002 and 4202**, with a temporary database schema cleaned up afterward.
 Your application on ports 5000/4200 and its saved layout remain independent.
 Use `--browser msedge` or `--browser chrome` to use an installed browser instead
@@ -130,7 +143,7 @@ of downloading Chromium. `--skip-browser` runs backend checks and the production
 build only. Alternatively set `TEST_DATABASE_URL` and omit `--test-database`.
 
 Failure traces/screenshots are written under ignored `frontend/test-results/`.
-See [verification notes](docs/verification.md) for evidence and manual checks.
+See [architecture notes](docs/architecture.md) for implementation and verification details.
 
 ## API
 
@@ -179,15 +192,20 @@ as `dynamic-report.pdf`. Generation rejects client layouts; save before generati
   **last-write-wins**; revisions are metadata rather than optimistic locks.
 - Single shared demo template; authentication, multi-user tenancy, and edit history
   are outside scope. The dev-server setup is intended for local assessment review.
-- PDF export is the chosen interpretation of report generation. ReportLab renders
-  A4 pages, repeated headers/footers and metadata, page numbers, colored tables,
-  repeating column labels, and splittable long rows. Source page numbers are not fixed.
-- Very long header/footer text shrinks into reserved 110-point regions and can become
-  small. The editor's text preview is not an exact paginated PDF preview.
-- Embedded Bitstream Vera fonts support Latin text. Arbitrary scripts and emoji
-  are not guaranteed. The PDF is structurally representative, not a pixel-perfect
-  reproduction of the source. No clinical calculations or original patient-data
-  ingestion are implemented.
+- The reference renderer preserves original vector artwork and embedded fonts. An
+  unchanged baseline returns the attachment bytes exactly. Renaming headings without
+  reordering keeps 45 pages; edited headings fit the original heading space.
+- Reordering moves complete source section fragments and preserves source page breaks.
+  Since two sections share the source's first page, separating them can produce 46
+  pages. Custom layouts are not byte-identical to the original. Tables retain source
+  layout rather than reflowing into a new document from structured clinical data.
+- Keeping default header/footer settings preserves the original branded regions.
+  Editing either block replaces that region with plain formatted text. Long text
+  shrinks to fit; the text preview is not an exact page preview. Latin text is supported;
+  arbitrary scripts and emoji are not guaranteed for custom text.
+- The source-backed renderer uses the installed report's actual fixed content. It does
+  not calculate clinical results or substitute patient data. A separate ReportLab
+  synthetic renderer remains available for portable automated tests.
 - Docker execution was unavailable in the authoring environment; migrations and
   integration checks were verified against local PostgreSQL 18.
 
@@ -199,7 +217,7 @@ as `dynamic-report.pdf`. Generation rejects client layouts; save before generati
 - `backend/app/api/`: REST endpoints.
 - `backend/app/data/`: immutable defaults and synthetic content.
 - `backend/app/models/`: saved layout model.
-- `backend/app/services/`: persistence and PDF rendering.
+- `backend/app/services/`: persistence, reference PDF rendering, and synthetic test renderer.
 - `backend/app/validation/`: strict configuration validation.
 - `backend/migrations/`: executable Alembic migration.
 - `backend/tests/`: unit/integration checks and private browser-test server.
@@ -228,5 +246,15 @@ PDF remain ignored.
 Repository: https://github.com/SaiP598/dynamic-report-template
 
 The initial scaffold and each subsequent module have separate implementation
-commits. See [module history](docs/module-plan.md) and [architecture](docs/architecture.md).
-The original clinical PDF is not committed; synthetic fixtures are used throughout.
+commits. See the Git commit history and [architecture](docs/architecture.md).
+The clinical attachment is kept locally in ignored `references/private/` and must
+be supplied separately to reviewers who need exact reference downloads. Automated
+reference tests generate nonclinical fixture PDFs; the real attachment is not needed
+for CI. The private browser-test server deliberately uses the synthetic renderer.
+
+## Switching an existing workspace to reference-exact output
+
+Install the updated Python requirements and restart Flask. In the editor choose
+**Restore default**, confirm, then **Download PDF**. Existing saved preferences are
+preserved until you save or restore; older synthetic footer settings are custom
+settings relative to the new reference default.
