@@ -132,3 +132,15 @@ without losing IDs; blank headings are flagged; refresh restores saved settings;
 503/retry and empty responses render correctly; mobile width 390px has no overflow;
 no browser page errors. Inspected desktop/mobile screenshots. Production build passed.
 Saving and formatting remain module 5 work; PDF output remains module 6 work.
+
+## Module 5 verification
+
+Implemented header/footer text, size, alignment, color, bold/italic, live text
+previews, save feedback, actual draft-versus-saved dirty tracking, before-unload
+warning, and confirmed restore. Failed writes preserve the draft; busy states lock
+editing until the response arrives. Validation prevents saving blank headings or
+out-of-range/noninteger sizes. Browser checks passed for saved heading/order and
+formatting after refresh, save failure with draft retained, validation, restore
+cancel/failure/retry/persistence, reverted dirty state, 390px mobile width, and no
+page errors. Mobile screenshot inspected and Angular production build passed.
+PDF generation remains module 6 work.

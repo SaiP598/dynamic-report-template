@@ -1,8 +1,9 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, HostListener, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { TemplateApi } from '../../core/services/template-api';
-import { SectionId, TemplateConfiguration } from '../../core/models/template';
+import { SectionId, TemplateConfiguration, TemplateResponse, TextFormatting } from '../../core/models/template';
 
 const DESCRIPTIONS: Record<SectionId, string> = {
   'current-medications': 'Current medications, unrecognized medications, and items outside scope.',
@@ -16,7 +17,7 @@ const DESCRIPTIONS: Record<SectionId, string> = {
 
 @Component({
   selector: 'app-report-builder',
-  imports: [DragDropModule],
+  imports: [DragDropModule, FormsModule],
   templateUrl: './report-builder.html',
 })
 export class ReportBuilder {
@@ -26,7 +27,21 @@ export class ReportBuilder {
   readonly loading = signal(true);
   readonly error = signal('');
   readonly announcement = signal('');
-  readonly edited = signal(false);
+  private readonly saved = signal('');
+  readonly edited = computed(() => JSON.stringify(this.configuration()) !== this.saved());
+  readonly busy = signal(false);
+  readonly feedback = signal('');
+  readonly actionError = signal('');
+  readonly confirmingRestore = signal(false);
+  readonly formattingTargets = ['header', 'footer'] as const;
+  readonly valid = computed(() => {
+    const current = this.configuration();
+    return !!current && current.sections.every(s => !!s.heading.trim() && s.heading.length <= 120)
+      && this.formattingTargets.every(key => {
+        const f = current[key];
+        return f.text.length <= 1000 && Number.isInteger(f.fontSize) && f.fontSize >= 6 && f.fontSize <= 36;
+      });
+  });
   readonly revision = signal(0);
   readonly descriptions = DESCRIPTIONS;
 
@@ -41,9 +56,7 @@ export class ReportBuilder {
           this.error.set('No report sections were returned. Please retry loading the template.');
           this.configuration.set(null);
         } else {
-          this.configuration.set(response.configuration);
-          this.revision.set(response.revision);
-          this.edited.set(false);
+          this.acceptSaved(response);
         }
         this.loading.set(false);
       },
@@ -60,20 +73,83 @@ export class ReportBuilder {
 
   move(from: number, to: number) {
     const current = this.configuration();
-    if (!current || from === to || to < 0 || to >= current.sections.length) return;
+    if (this.busy() || !current || from === to || to < 0 || to >= current.sections.length) return;
     const sections = [...current.sections];
     moveItemInArray(sections, from, to);
     this.configuration.set({ ...current, sections });
-    this.edited.set(true);
+    this.clearFeedback();
     this.announcement.set(`${sections[to].heading} moved to position ${to + 1} of ${sections.length}.`);
   }
 
   rename(id: SectionId, event: Event) {
+    if (this.busy()) return;
     const heading = (event.target as HTMLInputElement).value;
     this.configuration.update(current => current && ({
       ...current,
       sections: current.sections.map(section => section.id === id ? { ...section, heading } : section),
     }));
-    this.edited.set(true);
+    this.clearFeedback();
   }
+
+  updateFormatting(target: 'header' | 'footer', patch: Partial<TextFormatting>) {
+    if (this.busy()) return;
+    this.configuration.update(current => current && ({ ...current, [target]: { ...current[target], ...patch } }));
+    this.clearFeedback();
+  }
+
+  private clearFeedback() {
+    this.feedback.set('');
+    this.actionError.set('');
+  }
+
+  private acceptSaved(response: TemplateResponse) {
+    this.configuration.set(response.configuration);
+    this.saved.set(JSON.stringify(response.configuration));
+    this.revision.set(response.revision);
+  }
+
+  save() {
+    const current = this.configuration();
+    if (this.busy() || !current || !this.valid() || !this.edited()) return;
+    this.busy.set(true);
+    this.clearFeedback();
+    this.api.save(current).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: response => {
+        this.acceptSaved(response);
+        this.busy.set(false);
+        this.feedback.set('Template saved. Your changes will be available when you reopen the editor.');
+      },
+      error: () => {
+        this.busy.set(false);
+        this.actionError.set('Could not save the template. Your edits are still here. Please try saving again.');
+      },
+    });
+  }
+
+  restore() {
+    if (this.busy() || !this.confirmingRestore()) return;
+    this.busy.set(true);
+    this.clearFeedback();
+    this.api.restore().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: response => {
+        this.acceptSaved(response);
+        this.busy.set(false);
+        this.confirmingRestore.set(false);
+        this.feedback.set('Default template restored and saved.');
+      },
+      error: () => {
+        this.busy.set(false);
+        this.actionError.set('Could not restore the default. Your current edits are unchanged. Please try again.');
+      },
+    });
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  warnBeforeLeaving(event: BeforeUnloadEvent) {
+    if (this.edited() && this.configuration()) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+  }
+
 }

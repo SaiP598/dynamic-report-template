@@ -3,10 +3,10 @@
 Assessment implementation using Angular/TypeScript, Python Flask, and PostgreSQL.
 
 ## Current status
-Modules 1-4 complete: application scaffold, immutable default layout, seven synthetic
+Modules 1-5 complete: application scaffold, immutable default layout, seven synthetic
 report content blocks, PostgreSQL JSONB model, executable Alembic migration, and
-validated save/load/restore APIs, and a responsive section editor. Header/footer
-controls and saving from the UI arrive in module 5; PDF export follows in module 6.
+validated save/load/restore APIs, a responsive section editor, header/footer formatting,
+and saved-template controls. PDF export follows in module 6.
 
 ## Prerequisites
 Node.js 24, npm, Python 3.12+, Docker with Compose (or local PostgreSQL 17).
@@ -141,11 +141,29 @@ with keyboard Enter/Space. Rename headings in their labeled text fields; the out
 updates immediately. Blank headings show a validation message. Section IDs and
 content associations remain stable through rename and reorder.
 
-Module 4 edits are local drafts: refreshing reloads the last saved API configuration.
-The UI explicitly explains this; save/restore controls are added in module 5.
+Edits remain drafts until you select Save template. Refreshing reloads the last
+saved API configuration. The editor warns before leaving with unsaved changes.
 Loading, API failure/retry, and empty-section responses have dedicated states.
 
 Module 4 browser verification covered actual pointer dragging, keyboard reorder,
 rename/outline synchronization, stable IDs, blank headings, refresh, failure/retry,
 empty responses, and a 390px mobile viewport without horizontal overflow. The
 Angular production build also passed.
+
+## Formatting and saved templates (Module 5)
+
+Use Header and Footer to edit text, font size (6-36 pt), alignment, color, bold, and
+italic. Each block has a live text preview. Empty text is allowed. Save template
+persists the complete layout and clears the unsaved indicator; the revision updates
+when saving succeeds. Invalid headings or font sizes disable saving.
+
+Restore default asks for confirmation, then restores and saves the baseline.
+Cancel leaves the draft untouched. Failed save/restore requests preserve edits and
+show an error so you can retry. Inputs are locked during writes to prevent edits
+from being overwritten by the response. Saves use last-write-wins across tabs.
+
+Browser verification covered heading/order/formatting save-refresh persistence,
+failed-save draft preservation, invalid-value blocking, restore cancellation,
+failed restore and retry, persisted restore, reverted edits clearing dirty state,
+and mobile layout without overflow. The production build passed. Test changes were
+replaced with the pre-test saved configuration afterward (revision still advances).
