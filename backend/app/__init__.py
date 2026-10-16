@@ -23,6 +23,9 @@ def create_app(test_config=None):
         "postgresql+psycopg://report_builder:local_dev_only@localhost:5432/report_builder"
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    engine_options = app.config.setdefault("SQLALCHEMY_ENGINE_OPTIONS", {})
+    engine_options.setdefault("pool_pre_ping", True)
+    engine_options.setdefault("connect_args", {}).setdefault("connect_timeout", 5)
     db.init_app(app)
     from . import models  # noqa: F401 - register migration metadata
     migrate.init_app(app, db, directory=str(Path(__file__).resolve().parents[1] / "migrations"))

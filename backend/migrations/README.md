@@ -13,4 +13,4 @@ The immutable default remains in Python source; the migration does not seed it.
 
 `db downgrade` removes the table and its saved configuration. Use downgrade only
 against disposable databases or after a backup. Do not substitute `create_all` for
-migrations. Detailed payload validation and revision updates arrive in module 3.
+migrations. Payload validation and revision updates are implemented by the template API/service.

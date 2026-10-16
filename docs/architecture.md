@@ -16,7 +16,7 @@ Five numbered sections plus legend and patient card are seven movable blocks.
 PDF export is an implementation assumption based on the supplied sample. Preserve
 section structure, tables, repeated headers/footers and dynamic pagination. Basic
 header/footer formatting: size, color, alignment, bold, italic. Arbitrary HTML is not
-accepted. The exact visual fidelity and data coverage will be documented after module 6.
+accepted. Visual fidelity and synthetic data coverage limitations are documented in README.
 
 Routes (implemented through module 6):
 - GET /api/health: liveness, not database readiness.

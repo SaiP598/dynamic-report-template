@@ -23,3 +23,5 @@ charset-normalizer==3.5.2
 pillow==12.3.0
 reportlab==4.5.1
 pypdf==6.20.1
+colorama==0.4.6
+tzdata==2026.5

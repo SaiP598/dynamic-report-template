@@ -79,20 +79,20 @@ fix commits when warranted; do not force unrelated changes into one milestone.
 Never commit secrets, local environments, generated dependency folders, or the source
 clinical PDF. Do not create empty milestone commits in advance.
 
-This planning update does not implement or complete modules 2-7.
+The plan was recorded before implementation; completion evidence follows below.
 
 ## Acceptance checklist
-- [ ] Original report structure represented in default template.
-- [ ] All section contents move with their heading.
-- [ ] Heading changes and header/footer text/formatting persist in PostgreSQL.
-- [ ] Refresh/reopen loads last saved configuration.
-- [ ] Unsaved edits do not affect generated report.
-- [ ] Restore leaves immutable baseline unchanged.
-- [ ] Invalid API requests produce helpful errors.
-- [ ] Long output has no clipped rows or header/footer collisions.
-- [ ] Responsive layout and accessible reorder controls.
-- [ ] Clean checkout can be set up from README and migration scripts.
-- [ ] GitHub repository contains meaningful incremental commits.
+- [x] Original report structure represented in default template.
+- [x] All section contents move with their heading.
+- [x] Heading changes and header/footer text/formatting persist in PostgreSQL.
+- [x] Refresh/reopen loads last saved configuration.
+- [x] Unsaved edits do not affect generated report.
+- [x] Restore leaves immutable baseline unchanged.
+- [x] Invalid API requests produce helpful errors.
+- [x] Long output has no clipped rows or header/footer collisions.
+- [x] Responsive layout and accessible reorder controls.
+- [x] Clean checkout can be set up from README and migration scripts.
+- [x] GitHub repository contains meaningful incremental commits.
 
 Module 1 creates placeholders for later modules. Placeholder directories do not mean
 those modules are implemented. Update this document as each module is completed.
@@ -158,3 +158,24 @@ Inspected both default PDF pages and a 12-page stress-report contact sheet plus 
 page detail. Synthetic content, font coverage, and long-text shrink behavior are
 explicit limitations. Existing Flask on port 5000 needs restart to load the route;
 a temporary port-5001 instance was used for browser download verification.
+
+## Module 7 verification and handoff
+
+Added a repeatable `scripts/verify.py` command, dedicated-schema browser server,
+and two Playwright regressions for the complete workflow and load recovery.
+Verified 25 backend tests, two headless Edge browser tests, and Angular production
+build. A fresh local clone plus the Module 7 patch passed pinned Python installation,
+`pip check`, `npm ci`, fresh-database migration, and the same full verification.
+Browser checks cover pointer/keyboard ordering, formatting/color, saved refresh,
+PDF revision/download, retained drafts, save/download/restore failure and retry,
+restore cancellation/persistence, and mobile width. Fixed database connection hangs
+with a five-second connect timeout and stale pooled-connection checks. Pinned the
+Windows-only dependencies found during clean installation.
+
+README now documents actual setup, test database preparation, API contracts,
+technical decisions, and fidelity limits. The acceptance checklist refers to the
+synthetic representative report structure, not reproduction of the original clinical
+dataset. Docker was unavailable; PostgreSQL 18 was verified. Source, migrations,
+verification commands, and genuine incremental commits are prepared for the configured
+repository: https://github.com/SaiP598/dynamic-report-template. See verification.md
+for the repeatable checks and handoff notes.

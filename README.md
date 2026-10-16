@@ -1,200 +1,231 @@
 # Dynamic Report Template
 
-Assessment implementation using Angular/TypeScript, Python Flask, and PostgreSQL.
+Angular/TypeScript + Flask + PostgreSQL assessment application. Arrange seven report
+sections, rename headings, format headers/footers, save preferences, restore the
+default, and download a PDF generated from the last saved configuration.
 
-## Current status
-Modules 1-6 complete: application scaffold, immutable default layout, seven synthetic
-report content blocks, PostgreSQL JSONB model, executable Alembic migration, and
-validated save/load/restore APIs, a responsive section editor, header/footer formatting,
-saved-template controls, and PDF download from the last saved layout.
-Final verification and handoff remain module 7.
+All seven implementation modules are complete. The sample's **structure** is
+represented with synthetic content; this demo does not reproduce the full 45-page
+clinical report or its original patient data and logos.
 
 ## Prerequisites
-Node.js 24, npm, Python 3.12+, Docker with Compose (or local PostgreSQL 17).
-Angular 21 uses TypeScript 5.9; see https://angular.dev/reference/versions.
 
-## Setup
-From the project root, copy `.env.example` to `.env` (PowerShell: `Copy-Item .env.example .env`).
-The example password is for local development only.
+- Node.js 24 and npm (Angular 21 / TypeScript 5.9).
+- Python 3.12 or newer.
+- PostgreSQL 17 or 18, or Docker with Compose for the PostgreSQL 17 service.
+- Chromium for browser checks, or an installed Microsoft Edge / Google Chrome.
+
+## Setup from a clean checkout
 
 ```bash
+git clone https://github.com/SaiP598/dynamic-report-template.git
+cd dynamic-report-template
 cp .env.example .env
+```
+
+On PowerShell use `Copy-Item .env.example .env` instead of `cp`. For an existing
+checkout, preserve your working `.env`. Set development credentials and ensure
+`DATABASE_URL` matches the database, port, username, and password.
+
+Start PostgreSQL with Compose:
+
+```bash
 docker compose up -d db
+```
+
+Alternatively provision a local database and role using your PostgreSQL administrator,
+then set `DATABASE_URL` to `postgresql+psycopg://USER:PASSWORD@HOST:PORT/DATABASE`.
+Percent-encode reserved URL characters in credentials. Do not start Compose if
+another database already occupies its configured port.
+
+Create and activate a virtual environment:
+
+```bash
 python -m venv .venv
 ```
-Activate the virtual environment:
+
+- PowerShell: `.venv\Scripts\Activate.ps1`
 - macOS/Linux: `source .venv/bin/activate`
-- Windows PowerShell: `.venv\Scripts\Activate.ps1`
+
+Install dependencies, apply the migration, and start Flask:
 
 ```bash
 python -m pip install -r backend/requirements-lock.txt
 cd backend
 python -m flask --app app:create_app db upgrade
-python -m flask --app app:create_app run --port 5000
+python -m flask --app app:create_app run --host 127.0.0.1 --port 5000
 ```
-In a second terminal:
+
+In a second terminal, from the project root:
+
 ```bash
 cd frontend
 npm ci
 npm start
 ```
-Open http://localhost:4200. The development proxy forwards `/api` to Flask at
-127.0.0.1:5000. Health is available at http://localhost:5000/api/health.
-The health endpoint does not require or verify a database connection yet.
-Run migrations before starting the application. No saved configuration is seeded;
-the API will fall back to the immutable baseline in module 3.
 
-## Checks
+Open http://localhost:4200. The development proxy sends `/api` requests to Flask on
+127.0.0.1:5000. Restart Flask after backend changes unless running with `--debug`.
+The Angular dev server rebuilds frontend changes automatically.
+
+## Try the complete workflow
+
+1. Open the editor. Before the first save, it loads the immutable baseline.
+2. Drag a dotted grip, or use keyboard-accessible Up/Down buttons, to move sections.
+3. Rename headings. Section IDs keep each section's content attached to its heading.
+4. Edit header/footer text, font size, alignment, color, bold, and italic; inspect
+   the text previews. Blank text is allowed; blank section headings are not.
+5. Select **Save template**. The unsaved indicator clears and the revision advances.
+6. Refresh or reopen the editor; the saved settings return from PostgreSQL.
+7. Make an unsaved change, then select **Download PDF**. The PDF still uses the
+   last saved configuration; the draft remains untouched in the editor.
+8. Select **Restore default**, cancel to keep your draft, or confirm to restore
+   and persist the baseline. Refresh and download again to verify the default.
+
+Failed save/restore/download requests preserve the draft and support retry. Editing
+is locked during save/restore. Leaving with unsaved edits triggers the browser's
+standard warning. Reverting edits clears the unsaved state.
+
+## Tests and verification
+
+The lockfile includes pytest and pypdf for reproducible checks. Fast backend checks:
+
 ```bash
 cd backend
-python -m pytest
+python -m pytest -q
 ```
+
+Without `TEST_DATABASE_URL`, PostgreSQL integration tests are explicitly skipped.
+For the full verification, first create a **separate, empty test database** owned
+by the application role. With Compose (from the project root):
+
+```bash
+docker compose exec db sh -c 'createdb -U "$POSTGRES_USER" report_builder_test'
+```
+
+Do this once; an already-existing test database need not be recreated. For a local
+PostgreSQL installation, use your administrator to create `report_builder_test`
+with owner `report_builder`. Do not point verification at a database holding real data.
+
+Install the browser once:
+
 ```bash
 cd frontend
-npm run build
+npx playwright install chromium
+cd ..
 ```
 
-## Structure
-- `frontend/src/app/core/`: API services and typed contracts.
-- `frontend/src/app/features/report-builder/`: builder feature and starter screen.
-- `frontend/src/app/shared/`: shared UI controls.
-- `backend/app/api/`: REST endpoints.
-- `backend/app/models/`: persistence models.
-- `backend/app/services/`: persistence/rendering logic.
-- `backend/app/validation/`: request validation.
-- `backend/app/data/`: immutable defaults and synthetic fixtures.
-- `backend/app/templates/`: report rendering templates.
-- `backend/migrations/`: schema migration scripts.
-- `backend/tests/`: backend checks.
-- `docs/module-plan.md`: milestones, commit messages, acceptance checklist.
-- `docs/architecture.md`: architecture and API plan.
-- `references/private/`: ignored local assessment reference.
+With the Python virtual environment activated, from the project root:
 
-## Git workflow
-The initial scaffold is committed locally. Each subsequent module gets its own real
-commit after verification. No remote repository is configured yet.
-
-After creating an empty GitHub repository, connect and push:
 ```bash
-git remote add origin <YOUR_GITHUB_REPOSITORY_URL>
-git push -u origin main
+python scripts/verify.py --test-database report_builder_test
 ```
 
-The original clinical PDF is not included in version control. Use synthetic patient
-data for committed fixtures. See `docs/architecture.md` for scope and assumptions.
+The command derives the test connection from `.env`, applies migrations, runs all
+25 backend tests, builds Angular, and runs two browser workflow tests. It uses
+ports **5002 and 4202**, with a temporary database schema cleaned up afterward.
+Your application on ports 5000/4200 and its saved layout remain independent.
+Use `--browser msedge` or `--browser chrome` to use an installed browser instead
+of downloading Chromium. `--skip-browser` runs backend checks and the production
+build only. Alternatively set `TEST_DATABASE_URL` and omit `--test-database`.
 
-## Local Windows database for this workspace
+Failure traces/screenshots are written under ignored `frontend/test-results/`.
+See [verification notes](docs/verification.md) for evidence and manual checks.
 
-A dedicated PostgreSQL 18 cluster was created in ignored `.local/postgres` on
-127.0.0.1:55433. This workspace's ignored `.env` points to it. The existing system
-service on port 5432 is independent. Do not start Compose on the same port while
-this cluster is running. Other checkouts may use the Compose setup above.
+## API
 
-From the project root, start/stop this cluster when needed:
+| Method | Route | Behavior |
+| --- | --- | --- |
+| GET | `/api/health` | Liveness only; does not verify database availability |
+| GET | `/api/templates/default` | Immutable baseline; no database access |
+| GET | `/api/templates/current` | Last saved layout, or baseline before first save |
+| PUT | `/api/templates/current` | Validate and persist the complete layout |
+| POST | `/api/templates/current/restore` | Persist a fresh baseline; no request body |
+| POST | `/api/reports` | PDF attachment using saved layout; no request body |
+
+Template responses contain `configuration`, `revision`, `updatedAt`, and `isDefault`.
+PUT accepts the **bare configuration**, not the response envelope. Revision zero
+and a null timestamp indicate the baseline before its first save. `isDefault`
+compares the saved layout to the baseline. Example usage:
+
+```javascript
+const current = await fetch('/api/templates/current').then(r => r.json());
+current.configuration.sections[0].heading = 'My heading';
+await fetch('/api/templates/current', {
+  method: 'PUT', headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(current.configuration)
+});
+```
+
+Validation requires schema version 1, all seven known section IDs exactly once,
+nonblank headings up to 120 characters, header/footer text up to 1000 characters,
+integer font sizes 6-36, boolean bold/italic, left/center/right alignment, and
+`#RRGGBB` colors. Unknown fields are rejected. Text is escaped in PDF rendering.
+
+Errors use `{"error":{"code":"...","message":"..."}}`. Invalid configuration
+or malformed JSON returns 400; unsupported JSON content types return 415; oversized
+bodies return 413. Storage failures roll back and return sanitized 503 errors.
+Database connections time out after five seconds. Unexpected errors return 500.
+
+PDF responses include `X-Template-Revision` and `Cache-Control: no-store` and download
+as `dynamic-report.pdf`. Generation rejects client layouts; save before generating.
+
+## Decisions and limitations
+
+- PostgreSQL JSONB stores layout preferences separately from synthetic report content.
+  Stable IDs associate headings and order with content. The baseline lives in source
+  and is copied, never overwritten. No saved row is seeded during migration.
+- Atomic upsert increments revisions on saves/restores. Concurrent tabs use
+  **last-write-wins**; revisions are metadata rather than optimistic locks.
+- Single shared demo template; authentication, multi-user tenancy, and edit history
+  are outside scope. The dev-server setup is intended for local assessment review.
+- PDF export is the chosen interpretation of report generation. ReportLab renders
+  A4 pages, repeated headers/footers and metadata, page numbers, colored tables,
+  repeating column labels, and splittable long rows. Source page numbers are not fixed.
+- Very long header/footer text shrinks into reserved 110-point regions and can become
+  small. The editor's text preview is not an exact paginated PDF preview.
+- Embedded Bitstream Vera fonts support Latin text. Arbitrary scripts and emoji
+  are not guaranteed. The PDF is structurally representative, not a pixel-perfect
+  reproduction of the source. No clinical calculations or original patient-data
+  ingestion are implemented.
+- Docker execution was unavailable in the authoring environment; migrations and
+  integration checks were verified against local PostgreSQL 18.
+
+## Project structure
+
+- `frontend/src/app/core/`: typed models and HTTP services.
+- `frontend/src/app/features/report-builder/`: editor and saved-state workflow.
+- `frontend/e2e/`: browser regression tests.
+- `backend/app/api/`: REST endpoints.
+- `backend/app/data/`: immutable defaults and synthetic content.
+- `backend/app/models/`: saved layout model.
+- `backend/app/services/`: persistence and PDF rendering.
+- `backend/app/validation/`: strict configuration validation.
+- `backend/migrations/`: executable Alembic migration.
+- `backend/tests/`: unit/integration checks and private browser-test server.
+- `scripts/verify.py`: full verification entry point.
+- `docs/`: architecture, module history, and handoff evidence.
+
+## Existing Windows workspace database
+
+This author's workspace uses an ignored `.local/postgres` PostgreSQL 18 cluster on
+127.0.0.1:55433, with `.env` already configured. It is independent of the existing
+system service on port 5432. Start/stop it from the project root when needed:
+
 ```powershell
 & 'C:\Program Files\PostgreSQL\18\bin\pg_ctl.exe' -D .local/postgres -l .local/postgres.log -o '-p 55433 -h 127.0.0.1' -w start
 & 'C:\Program Files\PostgreSQL\18\bin\pg_ctl.exe' -D .local/postgres -m fast -w stop
 ```
 
-The application role owns the `report_builder` database. Local administrator
-credentials are kept in ignored `.local/admin-password`. Neither `.local` nor
-`.env` belongs in Git. JSONB changes should replace the configuration object;
-SQLAlchemy does not track nested in-place edits automatically.
+This local cluster and its administrator password file are not shipped in Git.
+Fresh checkouts should follow the general setup above. `.env`, `.local`, virtual
+environments, dependency folders, browser artifacts, and the clinical reference
+PDF remain ignored.
 
-For PostgreSQL tests, set `TEST_DATABASE_URL` to a dedicated migrated test database
-before running pytest. Without it, database tests are explicitly skipped.
+## Handoff
 
-## Template API (Module 3)
+Repository: https://github.com/SaiP598/dynamic-report-template
 
-All successful template responses have `configuration`, `revision`, `updatedAt`, and
-`isDefault`. `revision: 0` and `updatedAt: null` mean the baseline has not yet been
-saved; `isDefault` means the layout equals the baseline, even after a restore.
-
-| Method | Route | Behavior |
-| --- | --- | --- |
-| GET | `/api/templates/default` | Immutable baseline, no database access |
-| GET | `/api/templates/current` | Saved configuration, or baseline before first save |
-| PUT | `/api/templates/current` | Validate and persist a complete configuration |
-| POST | `/api/templates/current/restore` | Persist a fresh baseline; send no request body |
-
-PUT accepts the `configuration` object directly, not the response envelope.
-Fetch either GET endpoint and use its configuration as the starting payload.
-See `frontend/src/app/core/models/template.ts` for the version-one shape.
-
-Validation requires exactly seven unique known section IDs, schema version 1,
-nonblank headings up to 120 characters, header/footer text up to 1000 characters,
-integer font sizes 6-36, boolean bold/italic, left/center/right alignment, and
-`#RRGGBB` colors. Empty header/footer text is allowed. Unknown fields are rejected.
-Text is plain text, never executable HTML; rendering must escape it in module 6.
-
-Invalid configurations/malformed JSON return 400; unsupported content types return
-415; oversized bodies return 413. Database failures roll back and return a sanitized
-503 response. Errors use `{"error":{"code":"...","message":"..."}}`.
-Writes use an atomic PostgreSQL upsert and increment revisions, including restores.
-Concurrent saves use last-write-wins; revision is metadata, not an optimistic lock.
-No authentication or per-user templates are implemented in this assessment demo.
-
-## Section editor (Module 4)
-
-Open http://localhost:4200 with Flask and PostgreSQL running. The editor loads the
-last saved layout. Drag a section's dotted grip or activate its Up/Down buttons
-with keyboard Enter/Space. Rename headings in their labeled text fields; the outline
-updates immediately. Blank headings show a validation message. Section IDs and
-content associations remain stable through rename and reorder.
-
-Edits remain drafts until you select Save template. Refreshing reloads the last
-saved API configuration. The editor warns before leaving with unsaved changes.
-Loading, API failure/retry, and empty-section responses have dedicated states.
-
-Module 4 browser verification covered actual pointer dragging, keyboard reorder,
-rename/outline synchronization, stable IDs, blank headings, refresh, failure/retry,
-empty responses, and a 390px mobile viewport without horizontal overflow. The
-Angular production build also passed.
-
-## Formatting and saved templates (Module 5)
-
-Use Header and Footer to edit text, font size (6-36 pt), alignment, color, bold, and
-italic. Each block has a live text preview. Empty text is allowed. Save template
-persists the complete layout and clears the unsaved indicator; the revision updates
-when saving succeeds. Invalid headings or font sizes disable saving.
-
-Restore default asks for confirmation, then restores and saves the baseline.
-Cancel leaves the draft untouched. Failed save/restore requests preserve edits and
-show an error so you can retry. Inputs are locked during writes to prevent edits
-from being overwritten by the response. Saves use last-write-wins across tabs.
-
-Browser verification covered heading/order/formatting save-refresh persistence,
-failed-save draft preservation, invalid-value blocking, restore cancellation,
-failed restore and retry, persisted restore, reverted edits clearing dirty state,
-and mobile layout without overflow. The production build passed. Test changes were
-replaced with the pre-test saved configuration afterward (revision still advances).
-
-## PDF reports (Module 6)
-
-Install the updated `backend/requirements-lock.txt` and restart Flask to load the
-new route. Select Download PDF in the editor, or POST `/api/reports` with no body.
-The response is an attachment named `dynamic-report.pdf`, with
-`X-Template-Revision` identifying the saved revision and `Cache-Control: no-store`.
-The server loads the saved configuration; it rejects request bodies so unsaved
-browser drafts cannot replace it. Before first save, it uses the immutable default.
-A generation failure leaves the editor draft intact and allows retry.
-
-The A4 PDF renders all seven logical sections in saved order, saved headings,
-header/footer text and formatting, patient/specimen/provider metadata, numbered
-pages, color-coded medication tables, and repeating column headers. Long rows may
-split across pages. Free text is escaped rather than interpreted as markup.
-Very long header/footer blocks shrink to fit 110-point regions to avoid collisions;
-extreme text can become small. The text preview in the editor is not a page preview.
-
-### PDF limitations
-
-The output uses synthetic fixtures representing the reference report's structure;
-it does not reproduce the original 45-page clinical dataset or logos. Pagination
-adapts to content instead of matching source page numbers. Embedded Bitstream Vera
-fonts support Latin text; arbitrary scripts and emoji are not guaranteed. No clinical
-calculations, patient-data upload, or PDF editing are implemented.
-
-Verified 25 backend tests with PostgreSQL, saved/restore PDF integration, escaped
-text, multipage tables, oversized rows, blank/newline-heavy decorations, browser
-PDF download, generation failure/retry, and exclusion of unsaved edits. Inspected
-rendered default pages and a 12-page stress report. Production frontend build passed.
+The initial scaffold and each subsequent module have separate implementation
+commits. See [module history](docs/module-plan.md) and [architecture](docs/architecture.md).
+The original clinical PDF is not committed; synthetic fixtures are used throughout.

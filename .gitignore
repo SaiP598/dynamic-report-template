@@ -12,3 +12,5 @@ coverage/
 references/private/*
 !references/private/.gitkeep
 output/
+test-results/
+playwright-report/
