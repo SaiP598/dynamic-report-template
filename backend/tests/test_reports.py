@@ -87,6 +87,8 @@ def test_format_only_layout_uses_placeholders_without_reference_reads():
     assert float(reader.pages[0].mediabox.height) == 792
     output = "\n".join(page.extract_text() for page in reader.pages)
     assert "<br/>" not in output
+    assert "Proove Genomics, Inc." in output
+    assert len(reader.pages[0].images) >= 1
     for label in ("PATIENT INFORMATION", "SPECIMEN DETAILS", "PROVIDER INFORMATION",
                   "Demo Patient", "Demo Laboratory", "SYNTHETIC DEMONSTRATION"):
         assert label in output

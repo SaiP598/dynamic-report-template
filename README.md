@@ -7,9 +7,10 @@ default, and download a PDF generated from the last saved configuration.
 All seven implementation modules are complete. The report uses the email PDF only
 as a visual design reference: US Letter sizing, teal title/section styling,
 patient/specimen/provider columns, colored medication tables, and a two-column
-laboratory footer. All displayed content is synthetic or a generic placeholder.
+laboratory footer. Patient and clinical content is synthetic or a generic placeholder. Proove Genomics branding is retained as requested.
 The original attachment, patient data, clinical results, and real institutional
-contact details are not used by the application.
+contact details are not used by the application. A standalone Proove logo and the
+company name are retained as requested.
 
 ## Prerequisites
 
@@ -236,7 +237,8 @@ Repository: https://github.com/SaiP598/dynamic-report-template
 
 The initial scaffold and each subsequent module have separate implementation
 commits. See the Git commit history and [architecture](docs/architecture.md).
-The application and repository use only synthetic fixtures and generic labels.
+The application uses synthetic fixtures and generic data labels, with the explicitly
+requested Proove company name and logo.
 No original PDF is required or read at runtime. Source-derived clinical PDF/image
 copies created during the earlier fidelity experiment have been removed from the
 project. To adopt the new generic labels in an existing saved layout, select

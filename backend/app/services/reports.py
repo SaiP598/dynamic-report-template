@@ -14,6 +14,7 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, LongTable, 
 
 from ..data.report_content import get_report_content
 
+_LOGO_PATH = Path(__file__).resolve().parents[1] / "assets/proove-logo.png"
 _FONT_DIR = Path(reportlab.__file__).parent / "fonts"
 for name, filename in [("Report", "Vera.ttf"), ("ReportBold", "VeraBd.ttf"),
                        ("ReportItalic", "VeraIt.ttf"), ("ReportBoldItalic", "VeraBI.ttf")]:
@@ -106,12 +107,9 @@ def render_report(configuration, content=None):
         canvas.saveState()
         teal = colors.HexColor("#009688")
         canvas.setFillColor(colors.HexColor("#20332f"))
-        canvas.setFont("Report", 22)
-        canvas.drawString(22.5, 735, "DEMO")
-        canvas.setFont("Report", 8)
-        canvas.drawString(24, 720, "G E N O M I C S")
+        canvas.drawImage(str(_LOGO_PATH), 22.5, 716.35, width=164.61, height=38.79, mask="auto")
         canvas.setFont("ReportBold", 6)
-        canvas.drawString(22.5, 690, "Demo Laboratory")
+        canvas.drawString(22.5, 690, "Proove Genomics, Inc.")
         canvas.setFont("Report", 6)
         canvas.drawString(22.5, 678, "Synthetic data - not for clinical use")
         columns = [(215, 125, "PATIENT INFORMATION", [

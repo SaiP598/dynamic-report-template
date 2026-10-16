@@ -56,3 +56,8 @@ The source-backed renderer and its reference-path configuration were removed.
 Pagination follows placeholder content and saved preferences; no raw source pages
 are copied. Header/footer settings and complete section reorder remain supported.
 A regression test verifies the renderer works with reference-file reads prohibited.
+
+Proove Genomics branding is retained by explicit request: a standalone logo image
+under `backend/app/assets` and the company name. No source PDF or clinical data is
+read at runtime. Patient, specimen, provider, and clinical fixture values remain
+synthetic; other laboratory/footer details remain generic placeholders.

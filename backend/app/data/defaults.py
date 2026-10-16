@@ -15,7 +15,7 @@ _DEFAULT_JSON = json.dumps({
     "schemaVersion": 1,
     "sections": [dict(id=id_, heading=heading)
                  for id_, heading in zip(SECTION_IDS, DEFAULT_HEADINGS)],
-    "header": {"text": "Drug Metabolism Report",
+    "header": {"text": "Proove Drug Metabolism (Reprocessing)",
                "alignment": "center", "fontSize": 14, "bold": True,
                "italic": False, "color": "#ffffff"},
     "footer": {"text": "Demo Laboratory\nExample laboratory information\n"
