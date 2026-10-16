@@ -3,9 +3,10 @@
 Assessment implementation using Angular/TypeScript, Python Flask, and PostgreSQL.
 
 ## Current status
-Modules 1-3 complete: application scaffold, immutable default layout, seven synthetic
+Modules 1-4 complete: application scaffold, immutable default layout, seven synthetic
 report content blocks, PostgreSQL JSONB model, executable Alembic migration, and
-validated save/load/restore APIs. The editor and PDF generation follow in modules 4-6.
+validated save/load/restore APIs, and a responsive section editor. Header/footer
+controls and saving from the UI arrive in module 5; PDF export follows in module 6.
 
 ## Prerequisites
 Node.js 24, npm, Python 3.12+, Docker with Compose (or local PostgreSQL 17).
@@ -131,3 +132,20 @@ Invalid configurations/malformed JSON return 400; unsupported content types retu
 Writes use an atomic PostgreSQL upsert and increment revisions, including restores.
 Concurrent saves use last-write-wins; revision is metadata, not an optimistic lock.
 No authentication or per-user templates are implemented in this assessment demo.
+
+## Section editor (Module 4)
+
+Open http://localhost:4200 with Flask and PostgreSQL running. The editor loads the
+last saved layout. Drag a section's dotted grip or activate its Up/Down buttons
+with keyboard Enter/Space. Rename headings in their labeled text fields; the outline
+updates immediately. Blank headings show a validation message. Section IDs and
+content associations remain stable through rename and reorder.
+
+Module 4 edits are local drafts: refreshing reloads the last saved API configuration.
+The UI explicitly explains this; save/restore controls are added in module 5.
+Loading, API failure/retry, and empty-section responses have dedicated states.
+
+Module 4 browser verification covered actual pointer dragging, keyboard reorder,
+rename/outline synchronization, stable IDs, blank headings, refresh, failure/retry,
+empty responses, and a 390px mobile viewport without horizontal overflow. The
+Angular production build also passed.

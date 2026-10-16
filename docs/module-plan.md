@@ -120,3 +120,15 @@ application. Verified defaults before first save, order/headings/formatting roun
 trip, rejected saves preserving stored data, repeated saves, persisted restore, and
 unchanged baseline. All 21 backend tests pass with PostgreSQL enabled. UI and PDF
 work remain in modules 4-6.
+
+## Module 4 verification
+
+Implemented typed template loading, Angular CDK grip-based drag-and-drop, keyboard
+Up/Down controls with live announcements, editable headings, a synchronized outline,
+and responsive loading/error/retry/empty states. Stable IDs preserve content mapping.
+Verified in headless Microsoft Edge against the running Angular/Flask application:
+seven sections load; rename updates outline; keyboard and actual pointer drag reorder
+without losing IDs; blank headings are flagged; refresh restores saved settings;
+503/retry and empty responses render correctly; mobile width 390px has no overflow;
+no browser page errors. Inspected desktop/mobile screenshots. Production build passed.
+Saving and formatting remain module 5 work; PDF output remains module 6 work.

@@ -1,10 +1,50 @@
 <main>
-  <p class="eyebrow">FULL-STACK ASSESSMENT · MODULE 1</p>
-  <h1>Dynamic Report Template</h1>
-  <p class="intro">Customize report sections, save your layout, and generate a report.</p>
-  <section aria-labelledby="setup-title">
-    <h2 id="setup-title">Project foundation</h2>
-    <p role="status">{{ apiStatus() }}</p>
-    <p>The workspace is ready. The section editor, saved templates, and PDF generation will be added in the next modules.</p>
-  </section>
+  <header class="page-header">
+    <div><p class="eyebrow">REPORT WORKSPACE</p><h1>Make the report your own.</h1>
+      <p class="intro">Arrange sections and give each heading a clear, familiar name.</p></div>
+    <span class="badge">Template builder</span>
+  </header>
+  @if (loading()) {
+    <section class="state-panel" role="status"><h2>Loading your template...</h2><p>Getting the last saved section order and headings.</p></section>
+  } @else if (error()) {
+    <section class="state-panel"><h2>Template unavailable</h2><p role="alert">{{ error() }}</p>
+      <button type="button" class="primary" (click)="load()">Retry loading</button></section>
+  } @else if (configuration(); as template) {
+    <div class="workspace">
+      <section class="editor" aria-labelledby="sections-title">
+        <div class="section-toolbar"><div><p class="eyebrow">LAYOUT</p>
+          <h2 id="sections-title">Report sections <span class="count">{{ template.sections.length }}</span></h2></div>
+          <span class="draft-badge">{{ edited() ? 'Local changes' : revision() ? 'Saved layout loaded' : 'Default layout' }}</span></div>
+        <p id="reorder-help" class="hint">Drag the grip to reorder, or use the Up and Down buttons. Each section's content stays with its heading.</p>
+        <div cdkDropList class="section-list" aria-describedby="reorder-help" (cdkDropListDropped)="drop($event)">
+          @for (section of template.sections; track section.id; let index = $index) {
+            <article cdkDrag [cdkDragData]="section.id" class="section-card" [attr.aria-label]="'Section ' + (index + 1)">
+              <span cdkDragHandle class="drag-grip" aria-hidden="true" title="Drag section"></span>
+              <span class="position" aria-hidden="true">{{ index + 1 }}</span>
+              <div class="section-content">
+                <label [for]="'heading-' + section.id">Section heading</label>
+                <input [id]="'heading-' + section.id" [value]="section.heading" maxlength="120" required
+                  [attr.aria-invalid]="!section.heading.trim()" [attr.aria-describedby]="'detail-' + section.id"
+                  (input)="rename(section.id, $event)" />
+                <p [id]="'detail-' + section.id" class="section-description">{{ descriptions[section.id] }}</p>
+                @if (!section.heading.trim()) { <p class="field-error">Enter a heading for this section.</p> }
+              </div>
+              <div class="reorder-actions" role="group" [attr.aria-label]="'Reorder ' + section.heading">
+                <button type="button" [disabled]="index === 0" [attr.aria-label]="'Move ' + section.heading + ' up'" (click)="move(index, index - 1)">&#8593; <span>Up</span></button>
+                <button type="button" [disabled]="index === template.sections.length - 1" [attr.aria-label]="'Move ' + section.heading + ' down'" (click)="move(index, index + 1)">&#8595; <span>Down</span></button>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+      <aside aria-labelledby="guide-title"><div class="guide-card"><p class="eyebrow">YOUR LAYOUT</p>
+        <h2 id="guide-title">One section at a time.</h2><p>Move an entire section without separating its tables, findings, or supporting details.</p>
+        <ol class="outline" aria-label="Current section order">
+          @for (section of template.sections; track section.id) { <li>{{ section.heading.trim() || 'Untitled section' }}</li> }
+        </ol>
+        <p class="draft-note">Edits currently stay in this browser view. Saving and header/footer controls arrive in the next module. Refreshing reloads the last saved template.</p>
+      </div></aside>
+    </div>
+  }
+  <p class="sr-only" role="status" aria-live="polite">{{ announcement() }}</p>
 </main>
