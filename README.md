@@ -3,10 +3,9 @@
 Assessment implementation using Angular/TypeScript, Python Flask, and PostgreSQL.
 
 ## Current status
-Module 1 foundation only: Angular starter UI with API connection status, Flask health
-endpoint and JSON errors, PostgreSQL Docker Compose service, directory structure,
-and module-by-module commit plan. The report editor, persistence, migrations, and
-PDF generation are not implemented yet.
+Modules 1-2 complete: application scaffold, immutable default layout, seven synthetic
+report content blocks, PostgreSQL JSONB model, and executable Alembic migration.
+The editor, save/load APIs, and PDF generation follow in modules 3-6.
 
 ## Prerequisites
 Node.js 24, npm, Python 3.12+, Docker with Compose (or local PostgreSQL 17).
@@ -28,6 +27,7 @@ Activate the virtual environment:
 ```bash
 python -m pip install -r backend/requirements-lock.txt
 cd backend
+python -m flask --app app:create_app db upgrade
 python -m flask --app app:create_app run --port 5000
 ```
 In a second terminal:
@@ -39,7 +39,8 @@ npm start
 Open http://localhost:4200. The development proxy forwards `/api` to Flask at
 127.0.0.1:5000. Health is available at http://localhost:5000/api/health.
 The health endpoint does not require or verify a database connection yet.
-Database migrations and persistence commands will be added in module 2.
+Run migrations before starting the application. No saved configuration is seeded;
+the API will fall back to the immutable baseline in module 3.
 
 ## Checks
 ```bash
@@ -61,7 +62,7 @@ npm run build
 - `backend/app/validation/`: request validation.
 - `backend/app/data/`: immutable defaults and synthetic fixtures.
 - `backend/app/templates/`: report rendering templates.
-- `backend/migrations/`: schema migration scripts (pending).
+- `backend/migrations/`: schema migration scripts.
 - `backend/tests/`: backend checks.
 - `docs/module-plan.md`: milestones, commit messages, acceptance checklist.
 - `docs/architecture.md`: architecture and API plan.
@@ -79,3 +80,24 @@ git push -u origin main
 
 The original clinical PDF is not included in version control. Use synthetic patient
 data for committed fixtures. See `docs/architecture.md` for scope and assumptions.
+
+## Local Windows database for this workspace
+
+A dedicated PostgreSQL 18 cluster was created in ignored `.local/postgres` on
+127.0.0.1:55433. This workspace's ignored `.env` points to it. The existing system
+service on port 5432 is independent. Do not start Compose on the same port while
+this cluster is running. Other checkouts may use the Compose setup above.
+
+From the project root, start/stop this cluster when needed:
+```powershell
+& 'C:\Program Files\PostgreSQL\18\bin\pg_ctl.exe' -D .local/postgres -l .local/postgres.log -o '-p 55433 -h 127.0.0.1' -w start
+& 'C:\Program Files\PostgreSQL\18\bin\pg_ctl.exe' -D .local/postgres -m fast -w stop
+```
+
+The application role owns the `report_builder` database. Local administrator
+credentials are kept in ignored `.local/admin-password`. Neither `.local` nor
+`.env` belongs in Git. JSONB changes should replace the configuration object;
+SQLAlchemy does not track nested in-place edits automatically.
+
+For PostgreSQL tests, set `TEST_DATABASE_URL` to a dedicated migrated test database
+before running pytest. Without it, database tests are explicitly skipped.

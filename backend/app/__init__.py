@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify
 from werkzeug.exceptions import HTTPException
 
+from .extensions import db, migrate
+
 
 def create_app(test_config=None):
     load_dotenv(Path(__file__).resolve().parents[2] / ".env")
@@ -16,6 +18,14 @@ def create_app(test_config=None):
     )
     if test_config:
         app.config.update(test_config)
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = app.config["DATABASE_URL"] or (
+        "postgresql+psycopg://report_builder:local_dev_only@localhost:5432/report_builder"
+    )
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    db.init_app(app)
+    from . import models  # noqa: F401 - register migration metadata
+    migrate.init_app(app, db, directory=str(Path(__file__).resolve().parents[1] / "migrations"))
 
     from .api.health import health_bp
     app.register_blueprint(health_bp, url_prefix="/api")
