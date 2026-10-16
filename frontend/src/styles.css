@@ -75,3 +75,6 @@ textarea:focus-visible, select:focus-visible { outline: 3px solid #4699cb; outli
 .checkbox-controls input { width: 16px; height: 16px; }
 .text-preview { border: 1px dashed #cbd9d1; border-radius: 6px; padding: 16px; white-space: pre-wrap; overflow-wrap: anywhere; }
 @media (max-width: 600px) { .format-controls { grid-template-columns: 1fr 1fr; } .save-panel { padding: 16px; } }
+
+.download-note { flex-basis: 100%; font-size: 12px; color: #596b66; margin: 0; }
+.save-actions { flex-wrap: wrap; }

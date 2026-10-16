@@ -10,6 +10,10 @@ export class TemplateApi {
     return this.http.put<TemplateResponse>('/api/templates/current', configuration);
   }
 
+  generateReport() {
+    return this.http.post('/api/reports', null, { responseType: 'blob', observe: 'response' });
+  }
+
   restore() {
     return this.http.post<TemplateResponse>('/api/templates/current/restore', null);
   }

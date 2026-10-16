@@ -103,6 +103,13 @@ def test_saved_configuration_survives_new_app_and_restore():
         assert saved.json["revision"] == 1
         assert saved.json["updatedAt"] is not None
         assert saved.json["isDefault"] is False
+        from io import BytesIO
+        from pypdf import PdfReader
+        pdf = client.post("/api/reports")
+        assert pdf.status_code == 200
+        pdf_text = "\n".join(page.extract_text() for page in PdfReader(BytesIO(pdf.data)).pages)
+        assert "Custom heading" in pdf_text and "Custom header" in pdf_text
+        assert pdf.headers["X-Template-Revision"] == "1"
         second = create_app(settings).test_client()
         assert second.get("/api/templates/current").json == saved.json
         invalid = deepcopy(payload)
@@ -115,6 +122,10 @@ def test_saved_configuration_survives_new_app_and_restore():
         assert restored.json["configuration"] == baseline["configuration"]
         assert restored.json["revision"] == 3
         assert restored.json["isDefault"] is True
+        pdf = second.post("/api/reports")
+        pdf_text = "\n".join(page.extract_text() for page in PdfReader(BytesIO(pdf.data)).pages)
+        assert "Custom heading" not in pdf_text
+        assert "1. Current Patient Medications" in pdf_text
         assert create_app(settings).test_client().get("/api/templates/current").json == restored.json
         assert client.get("/api/templates/default").json == baseline
     finally:

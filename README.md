@@ -3,10 +3,11 @@
 Assessment implementation using Angular/TypeScript, Python Flask, and PostgreSQL.
 
 ## Current status
-Modules 1-5 complete: application scaffold, immutable default layout, seven synthetic
+Modules 1-6 complete: application scaffold, immutable default layout, seven synthetic
 report content blocks, PostgreSQL JSONB model, executable Alembic migration, and
 validated save/load/restore APIs, a responsive section editor, header/footer formatting,
-and saved-template controls. PDF export follows in module 6.
+saved-template controls, and PDF download from the last saved layout.
+Final verification and handoff remain module 7.
 
 ## Prerequisites
 Node.js 24, npm, Python 3.12+, Docker with Compose (or local PostgreSQL 17).
@@ -167,3 +168,33 @@ failed-save draft preservation, invalid-value blocking, restore cancellation,
 failed restore and retry, persisted restore, reverted edits clearing dirty state,
 and mobile layout without overflow. The production build passed. Test changes were
 replaced with the pre-test saved configuration afterward (revision still advances).
+
+## PDF reports (Module 6)
+
+Install the updated `backend/requirements-lock.txt` and restart Flask to load the
+new route. Select Download PDF in the editor, or POST `/api/reports` with no body.
+The response is an attachment named `dynamic-report.pdf`, with
+`X-Template-Revision` identifying the saved revision and `Cache-Control: no-store`.
+The server loads the saved configuration; it rejects request bodies so unsaved
+browser drafts cannot replace it. Before first save, it uses the immutable default.
+A generation failure leaves the editor draft intact and allows retry.
+
+The A4 PDF renders all seven logical sections in saved order, saved headings,
+header/footer text and formatting, patient/specimen/provider metadata, numbered
+pages, color-coded medication tables, and repeating column headers. Long rows may
+split across pages. Free text is escaped rather than interpreted as markup.
+Very long header/footer blocks shrink to fit 110-point regions to avoid collisions;
+extreme text can become small. The text preview in the editor is not a page preview.
+
+### PDF limitations
+
+The output uses synthetic fixtures representing the reference report's structure;
+it does not reproduce the original 45-page clinical dataset or logos. Pagination
+adapts to content instead of matching source page numbers. Embedded Bitstream Vera
+fonts support Latin text; arbitrary scripts and emoji are not guaranteed. No clinical
+calculations, patient-data upload, or PDF editing are implemented.
+
+Verified 25 backend tests with PostgreSQL, saved/restore PDF integration, escaped
+text, multipage tables, oversized rows, blank/newline-heavy decorations, browser
+PDF download, generation failure/retry, and exclusion of unsaved edits. Inspected
+rendered default pages and a 12-page stress report. Production frontend build passed.

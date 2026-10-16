@@ -31,6 +31,9 @@ export class ReportBuilder {
   readonly edited = computed(() => JSON.stringify(this.configuration()) !== this.saved());
   readonly busy = signal(false);
   readonly feedback = signal('');
+  readonly generating = signal(false);
+  readonly downloadError = signal('');
+  readonly downloadStatus = signal('');
   readonly actionError = signal('');
   readonly confirmingRestore = signal(false);
   readonly formattingTargets = ['header', 'footer'] as const;
@@ -140,6 +143,33 @@ export class ReportBuilder {
       error: () => {
         this.busy.set(false);
         this.actionError.set('Could not restore the default. Your current edits are unchanged. Please try again.');
+      },
+    });
+  }
+
+  downloadReport() {
+    if (this.generating() || this.busy()) return;
+    this.generating.set(true);
+    this.downloadError.set('');
+    this.downloadStatus.set('');
+    this.api.generateReport().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: response => {
+        this.generating.set(false);
+        if (!response.body) {
+          this.downloadError.set('The report was empty. Please try again.');
+          return;
+        }
+        const url = URL.createObjectURL(response.body);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'dynamic-report.pdf';
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        this.downloadStatus.set('Report downloaded from saved revision ' + (response.headers.get('X-Template-Revision') ?? this.revision()) + '.');
+      },
+      error: () => {
+        this.generating.set(false);
+        this.downloadError.set('Could not generate the report. Your edits are unchanged. Please try again.');
       },
     });
   }

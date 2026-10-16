@@ -33,6 +33,9 @@ def create_app(test_config=None):
     from .api.templates import templates_bp
     app.register_blueprint(templates_bp, url_prefix="/api")
 
+    from .api.reports import reports_bp
+    app.register_blueprint(reports_bp, url_prefix="/api")
+
     @app.errorhandler(HTTPException)
     def handle_http_error(error):
         return jsonify(error={"code": error.name, "message": error.description}), error.code

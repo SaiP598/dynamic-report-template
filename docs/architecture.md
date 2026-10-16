@@ -18,7 +18,7 @@ section structure, tables, repeated headers/footers and dynamic pagination. Basi
 header/footer formatting: size, color, alignment, bold, italic. Arbitrary HTML is not
 accepted. The exact visual fidelity and data coverage will be documented after module 6.
 
-Routes (health and template routes implemented; reports arrive in module 6):
+Routes (implemented through module 6):
 - GET /api/health: liveness, not database readiness.
 - GET /api/templates/default: immutable baseline.
 - GET /api/templates/current: last saved configuration, or baseline before first save.
@@ -38,3 +38,10 @@ PostgreSQL upsert prevents first-save races and increments revision on every wri
 Writes are last-write-wins; optimistic concurrency and authentication are outside
 this demo's scope. Failed database operations roll back and return sanitized 503
 errors. The baseline endpoint is independent of database availability.
+
+ReportLab renders A4 reports using escaped Paragraphs, splittable LongTables, embedded
+Vera fonts, and dynamic header/footer margins. Each page repeats metadata and page
+numbering. Long decoration text shrinks to fit reserved regions. The report endpoint
+accepts no body and reads the last saved server configuration. It returns a PDF
+attachment with the revision header and no-store caching. Report content remains
+synthetic and separate from preferences; fidelity limits are documented in README.

@@ -144,3 +144,17 @@ formatting after refresh, save failure with draft retained, validation, restore
 cancel/failure/retry/persistence, reverted dirty state, 390px mobile width, and no
 page errors. Mobile screenshot inspected and Angular production build passed.
 PDF generation remains module 6 work.
+
+## Module 6 verification
+
+Implemented server-side saved-template PDF rendering and browser download with
+busy/status/error states. Rendered all seven section types, escaped headings/text,
+formatting, metadata, repeating headers/footers, dynamic page numbers, colored tables,
+repeating table headers, and splitting oversized rows. Updated runtime/development
+requirements and lockfile. All 25 backend tests pass with PostgreSQL enabled,
+including generation after save and restore. Browser download/failure/retry checks
+passed; downloaded PDF text excludes unsaved browser edits. Production build passed.
+Inspected both default PDF pages and a 12-page stress-report contact sheet plus table
+page detail. Synthetic content, font coverage, and long-text shrink behavior are
+explicit limitations. Existing Flask on port 5000 needs restart to load the route;
+a temporary port-5001 instance was used for browser download verification.
